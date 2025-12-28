@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ valve.valve_name }} - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{{ url_for('valves.list_valves') }}" class="btn btn-secondary mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Valves
+        </a>
+        <h2><i class="bi bi-droplet-fill"></i> {{ valve.valve_name }}</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Valve Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Location:</th>
+                        <td>{{ valve.location }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge bg-{% if valve.status == 'operational' %}success{% elif valve.status == 'maintenance' %}warning{% else %}danger{% endif %}">
+                                {{ valve.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Open Percentage:</th>
+                        <td>
+                            <div class="progress" style="width: 200px;">
+                                <div class="progress-bar {% if valve.open_percentage > 75 %}bg-danger{% elif valve.open_percentage > 25 %}bg-warning{% else %}bg-success{% endif %}" 
+                                     role="progressbar" style="width: {{ valve.open_percentage }}%">
+                                    {{ valve.open_percentage }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Communication:</th>
+                        <td>
+                            <span class="badge bg-{% if valve.communication_status == 'connected' %}success{% elif valve.communication_status == 'timeout' %}warning{% else %}danger{% endif %}">
+                                {{ valve.communication_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Last Command:</th>
+                        <td>{{ valve.last_command or 'None' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Last Command Time:</th>
+                        <td>{{ valve.last_command_timestamp or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Last Response:</th>
+                        <td>{{ valve.last_response_timestamp or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Firmware Version:</th>
+                        <td>{{ valve.firmware_version }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Valve Control</h5>
+            </div>
+            <div class="card-body">
+                {% if session.role in ['admin', 'operator'] %}
+                <form method="POST" action="{{ url_for('valves.control_valve', valve_id=valve.id) }}">
+                    <input type="hidden" name="user_id" value="{{ session.user_id }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <button type="submit" name="action" value="open" class="btn btn-success w-100">
+                                <i class="bi bi-arrow-up-circle"></i> Open Valve
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" name="action" value="close" class="btn btn-danger w-100">
+                                <i class="bi bi-arrow-down-circle"></i> Close Valve
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="target_percentage" class="form-label">Adjust to Percentage:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="target_percentage" 
+                                   min="0" max="100" placeholder="0-100">
+                            <button type="submit" name="action" value="adjust" class="btn btn-warning">
+                                <i class="bi bi-sliders"></i> Adjust
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" name="action" value="sync" class="btn btn-info w-100">
+                        <i class="bi bi-arrow-repeat"></i> Force Re-synchronization
+                    </button>
+                </form>
+                {% else %}
+                <p class="text-muted">You don't have permission to control valves.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Command History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Command</th>
+                                <th>User</th>
+                                <th>Target %</th>
+                                <th>Status</th>
+                                <th>Response Time</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.timestamp }}</td>
+                                <td><strong>{{ log.command }}</strong></td>
+                                <td>{{ log.username }}</td>
+                                <td>{{ log.target_percentage or 'N/A' }}</td>
+                                <td>
+                                    <span class="badge bg-{% if log.status == 'success' %}success{% elif log.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                        {{ log.status }}
+                                    </span>
+                                </td>
+                                <td>{{ log.response_time_ms or 'N/A' }} ms</td>
+                                <td>{{ log.error_message or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if logs|length == 0 %}
+                <p class="text-muted">No command history available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

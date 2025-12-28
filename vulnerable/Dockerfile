@@ -14,7 +14,7 @@ COPY . .
 RUN python init_db.py
 RUN python populate_db.py
 
-EXPOSE 5001
+EXPOSE 5002
 
 ENV FLASK_APP=app/app.py
 ENV PYTHONUNBUFFERED=1

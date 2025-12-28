@@ -72,13 +72,32 @@ task_5_CS437/
 
 ## Two Versions
 
-### 🔴 Vulnerable Version (Port 5000)
+### 🔴 Vulnerable Version (Port 5002)
 Contains intentional security flaws for educational demonstration:
 
 1. **CWE-434 Scenario 1:** Unrestricted file upload (no validation)
-2. **CWE-434 Scenario 2:** Weak protections (bypassable size limit + blacklist)
+   - Endpoint: `/upload/scenario1`
+   - No file type validation, size limits, or content scanning
+   - Original filename preserved
+
+2. **CWE-434 Scenario 2:** Weak protections (bypassable)
+   - Endpoint: `/upload/scenario2`
+   - Header-based size check (client-controlled)
+   - Incomplete extension blacklist (`.exe`, `.sh`, `.bat`, `.php` only)
+   - No MIME type verification
+
 3. **CWE-434 Scenario 3:** Encrypted file scan bypass
-4. **SQL Injection:** Role-based conditional escaping (admin vulnerable, operator safe)
+   - Endpoint: `/upload/scenario3`
+   - Files encrypted with AES-256 before storage
+   - Scanning performed on encrypted data (ineffective)
+   - Decryption endpoint: `/upload/scenario3/decrypt/<id>`
+   - Malicious content hidden inside encryption
+
+4. **SQL Injection:** Role-based conditional escaping
+   - Endpoint: `/valves/search` (POST)
+   - Admin users: Raw SQL with string interpolation (vulnerable)
+   - Operator users: Parameterized queries (safe)
+   - Attack detection logged but not blocked for admins
 
 ### 🟢 Patched Version (Port 5001)
 Implements proper security controls:
@@ -162,14 +181,14 @@ docker-compose up --build
 
 #### File Upload Attack (Scenario 1)
 ```bash
-curl -X POST http://localhost:5000/upload/scenario1 \
+curl -X POST http://localhost:5002/upload/scenario1 \
   -H "Cookie: session=<admin-session>" \
   -F "file=@webshell.php"
 ```
 
 #### SQL Injection (Admin Role)
 ```bash
-curl -X POST http://localhost:5000/valves/search \
+curl -X POST http://localhost:5002/valves/search \
   -H "Cookie: session=<admin-session>" \
   -d "search=V-001' UNION SELECT username,password_hash,role,email,1,2 FROM users--"
 ```
@@ -180,7 +199,7 @@ Use Burp Suite to tamper with Content-Length header while uploading oversized fi
 ## Monitoring System
 
 Access the monitoring dashboard as admin:
-- **URL:** http://localhost:5000/monitoring
+- **URL:** http://localhost:5002/monitoring (vulnerable) or http://localhost:5001/monitoring (patched)
 - **Features:**
   - Real-time attack detection
   - Attack classification (SQL injection, file upload abuse, size bypass, etc.)
@@ -216,8 +235,10 @@ See `ARCHITECTURE.md` for complete schema details.
 
 Track implementation progress in `todo.md`:
 - ✅ Phase 0: Architecture & Design
-- ⏳ Phase 1: Secure Baseline Application
-- ⏳ Phase 2-8: Implementation, Testing, Documentation
+- ✅ Phase 1: Secure Baseline Application
+- ✅ Phase 2: Clone to Vulnerable Version
+- ⏳ Phase 3: Implement Vulnerabilities
+- ⏳ Phase 4-8: Monitoring, Testing, Docker, Documentation
 
 ## Assignment Requirements Checklist
 
@@ -273,6 +294,6 @@ All team members must be present for the Zoom demonstration session covering:
 ---
 
 **Last Updated:** December 28, 2025  
-**Status:** Phase 0 Complete - Architecture Defined  
-**Next Milestone:** Implement secure baseline application
+**Status:** Phase 2 Complete - Both Versions Ready  
+**Next Milestone:** Implement vulnerabilities in vulnerable version (Phase 3)
 

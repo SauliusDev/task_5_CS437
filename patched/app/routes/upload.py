@@ -25,7 +25,7 @@ os.makedirs(os.path.join(UPLOAD_FOLDER, 'firmware'), exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'configs'), exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_FOLDER, 'encrypted'), exist_ok=True)
 
-AES_KEY = b'ThisIsA32ByteKeyForAES256Encry!'
+AES_KEY = b'12345678901234567890123456789012'
 
 def get_file_extension(filename):
     return os.path.splitext(filename)[1].lower()

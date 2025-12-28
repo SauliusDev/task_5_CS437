@@ -1,0 +1,11 @@
+VULNERABLE VERSION - FOR EDUCATIONAL PURPOSES ONLY
+
+This version contains intentional security vulnerabilities:
+- CWE-434: Unrestricted File Upload (3 scenarios)
+- SQL Injection: Role-based conditional escaping
+
+DO NOT deploy this version in production environments.
+
+Port: 5000
+Status: Intentionally Vulnerable
+

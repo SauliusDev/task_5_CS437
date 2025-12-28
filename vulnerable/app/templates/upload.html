@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}File Upload - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-cloud-upload"></i> File Upload</h2>
+        <p class="text-muted">Upload firmware updates and configuration files for valves</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Secure Upload</h5>
+            </div>
+            <div class="card-body">
+                <p>This upload endpoint has proper security controls:</p>
+                <ul>
+                    <li>File type whitelist (.bin, .conf only)</li>
+                    <li>Magic byte verification</li>
+                    <li>Size limit enforcement</li>
+                    <li>Secure filename generation</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_secure') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_secure" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_secure" name="file" required>
+                        <small class="text-muted">Allowed: .bin (firmware), .conf (config) - Max 5MB</small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-upload"></i> Upload Securely
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-lock"></i> Encrypted Upload</h5>
+            </div>
+            <div class="card-body">
+                <p>Upload encrypted files (AES-256):</p>
+                <ul>
+                    <li>Files are encrypted before upload</li>
+                    <li>Scanned in encrypted form</li>
+                    <li>Stored securely</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_encrypted') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_encrypted" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_encrypted" name="file" required>
+                        <small class="text-muted">File will be encrypted with AES-256</small>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-upload"></i> Upload Encrypted
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h3 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Vulnerable Upload Scenarios (Testing Only)</h3>
+        <p class="text-muted">These endpoints demonstrate specific CWE-434 vulnerabilities</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-x-circle"></i> Scenario 1: No Protection</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger"><strong>Vulnerability: CWE-434</strong></p>
+                <p>This endpoint has NO security controls:</p>
+                <ul>
+                    <li>No file type validation</li>
+                    <li>No content scanning</li>
+                    <li>No size limits</li>
+                    <li>Original filename preserved</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_scenario1') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_scenario1" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_scenario1" name="file" required>
+                        <small class="text-danger">⚠️ Any file type accepted!</small>
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-upload"></i> Upload (Vulnerable)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Scenario 2: Weak Protection</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-warning"><strong>Vulnerability: CWE-434</strong></p>
+                <p>Weak security controls (bypassable):</p>
+                <ul>
+                    <li>Header-based size check (bypassable)</li>
+                    <li>Extension blacklist (incomplete)</li>
+                    <li>No MIME type verification</li>
+                    <li>No content scanning</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_scenario2') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_scenario2" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_scenario2" name="file" required>
+                        <small class="text-warning">⚠️ Blacklist: .exe, .sh, .bat, .php</small>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-upload"></i> Upload (Weak)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-file-lock"></i> Scenario 3: Encrypted Bypass</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger"><strong>Vulnerability: CWE-434</strong></p>
+                <p>Encryption bypass vulnerability:</p>
+                <ul>
+                    <li>Files encrypted with AES-256</li>
+                    <li>Scanned in encrypted form only</li>
+                    <li>Decrypted later without re-scan</li>
+                    <li>Malicious content hidden in encryption</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_scenario3') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_scenario3" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_scenario3" name="file" required>
+                        <small class="text-danger">⚠️ Encrypted files bypass scanning</small>
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-upload"></i> Upload Encrypted (Vulnerable)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h3><i class="bi bi-files"></i> Uploaded Files</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Original Filename</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Uploaded</th>
+                                <th>Endpoint</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if uploads %}
+                                {% for upload in uploads %}
+                                <tr>
+                                    <td>{{ upload.id }}</td>
+                                    <td>{{ upload.original_filename }}</td>
+                                    <td>
+                                        {% if upload.is_encrypted %}
+                                        <span class="badge bg-info">Encrypted</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ upload.file_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ (upload.file_size / 1024) | round(2) }} KB</td>
+                                    <td>{{ upload.uploaded_at }}</td>
+                                    <td><code>{{ upload.upload_endpoint }}</code></td>
+                                    <td>
+                                        {% if upload.is_encrypted and upload.upload_endpoint == '/upload/scenario3' %}
+                                        <form method="POST" action="{{ url_for('upload.decrypt_file', file_id=upload.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-unlock"></i> Decrypt
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No files uploaded yet</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Security Monitoring - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-shield-check"></i> Security Monitoring Dashboard</h2>
+        <p class="text-muted">Real-time attack detection and classification system</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-exclamation-triangle"></i> Total Attacks</h5>
+                <h2 class="mb-0">{{ stats.total }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-clock-history"></i> Last 24h</h5>
+                <h2 class="mb-0">{{ stats.recent_24h }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-bug"></i> SQL Injection</h5>
+                <h2 class="mb-0">{{ stats.by_type.get('sql_injection', 0) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-file-earmark"></i> File Upload</h5>
+                <h2 class="mb-0">{{ stats.by_type.get('file_upload_abuse', 0) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Attack Types Distribution</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Attack Type</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attack_type, count in stats.by_type.items() %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-danger">{{ attack_type }}</span>
+                            </td>
+                            <td><strong>{{ count }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Severity Distribution</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Severity</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for severity, count in stats.by_severity.items() %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-{% if severity == 'critical' %}danger{% elif severity == 'high' %}warning{% elif severity == 'medium' %}info{% else %}secondary{% endif %}">
+                                    {{ severity|upper }}
+                                </span>
+                            </td>
+                            <td><strong>{{ count }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="bi bi-list"></i> Recent Attack Events</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Type</th>
+                        <th>Endpoint</th>
+                        <th>User</th>
+                        <th>IP Address</th>
+                        <th>Severity</th>
+                        <th>Blocked</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attack in attacks %}
+                    <tr>
+                        <td><small>{{ attack.timestamp }}</small></td>
+                        <td>
+                            <span class="badge bg-danger">{{ attack.attack_type }}</span>
+                        </td>
+                        <td><code>{{ attack.endpoint }}</code></td>
+                        <td>{{ attack.username or 'Anonymous' }}</td>
+                        <td><code>{{ attack.ip_address }}</code></td>
+                        <td>
+                            <span class="badge bg-{% if attack.severity == 'critical' %}danger{% elif attack.severity == 'high' %}warning{% elif attack.severity == 'medium' %}info{% else %}secondary{% endif %}">
+                                {{ attack.severity }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if attack.blocked %}
+                            <span class="badge bg-success"><i class="bi bi-shield-check"></i> Yes</span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-shield-x"></i> No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#attackModal{{ attack.id }}">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if attacks|length == 0 %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> No attacks detected yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% for attack in attacks %}
+<div class="modal fade" id="attackModal{{ attack.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Attack Details #{{ attack.id }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <th>Timestamp:</th>
+                        <td>{{ attack.timestamp }}</td>
+                    </tr>
+                    <tr>
+                        <th>Attack Type:</th>
+                        <td><span class="badge bg-danger">{{ attack.attack_type }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Endpoint:</th>
+                        <td><code>{{ attack.endpoint }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>Method:</th>
+                        <td><span class="badge bg-secondary">{{ attack.request_method }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>User:</th>
+                        <td>{{ attack.username or 'Anonymous' }}</td>
+                    </tr>
+                    <tr>
+                        <th>IP Address:</th>
+                        <td><code>{{ attack.ip_address }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>User Agent:</th>
+                        <td><small>{{ attack.user_agent }}</small></td>
+                    </tr>
+                    <tr>
+                        <th>Severity:</th>
+                        <td>
+                            <span class="badge bg-{% if attack.severity == 'critical' %}danger{% elif attack.severity == 'high' %}warning{% elif attack.severity == 'medium' %}info{% else %}secondary{% endif %}">
+                                {{ attack.severity }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Blocked:</th>
+                        <td>
+                            {% if attack.blocked %}
+                            <span class="badge bg-success"><i class="bi bi-shield-check"></i> Yes</span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-shield-x"></i> No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Payload:</th>
+                        <td><pre class="bg-light p-2"><code>{{ attack.payload }}</code></pre></td>
+                    </tr>
+                    <tr>
+                        <th>Details:</th>
+                        <td>{{ attack.details or 'N/A' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
