@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Valves - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="bi bi-grid-3x3-gap"></i> Valve Management</h2>
+    </div>
+    <div class="col-md-4">
+        <form method="POST" action="{{ url_for('valves.search_valves') }}" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Search valves..." value="{{ search_term or '' }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            All Valves 
+            {% if search_term %}
+            <span class="badge bg-info">Filtered: {{ search_term }}</span>
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Valve ID</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Open %</th>
+                        <th>Communication</th>
+                        <th>Last Command</th>
+                        <th>Firmware</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for valve in valves %}
+                    <tr>
+                        <td><strong>{{ valve.valve_name }}</strong></td>
+                        <td>{{ valve.location }}</td>
+                        <td>
+                            <span class="badge bg-{% if valve.status == 'operational' %}success{% elif valve.status == 'maintenance' %}warning{% else %}danger{% endif %}">
+                                {{ valve.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress" style="width: 120px;">
+                                <div class="progress-bar {% if valve.open_percentage > 75 %}bg-danger{% elif valve.open_percentage > 25 %}bg-warning{% else %}bg-success{% endif %}" 
+                                     role="progressbar" style="width: {{ valve.open_percentage }}%">
+                                    {{ valve.open_percentage }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if valve.communication_status == 'connected' %}success{% elif valve.communication_status == 'timeout' %}warning{% else %}danger{% endif %}">
+                                <i class="bi bi-{% if valve.communication_status == 'connected' %}wifi{% else %}wifi-off{% endif %}"></i>
+                                {{ valve.communication_status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if valve.last_command %}
+                            <small>{{ valve.last_command }}<br>{{ valve.last_command_timestamp }}</small>
+                            {% else %}
+                            <small class="text-muted">No commands</small>
+                            {% endif %}
+                        </td>
+                        <td><small>{{ valve.firmware_version }}</small></td>
+                        <td>
+                            <a href="{{ url_for('valves.valve_detail', valve_id=valve.id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if valves|length == 0 %}
+        <div class="alert alert-info">
+            No valves found{% if search_term %} matching "{{ search_term }}"{% endif %}.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

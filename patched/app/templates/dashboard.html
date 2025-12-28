@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-speedometer2"></i> System Dashboard
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-droplet-fill"></i> Total Valves</h5>
+                <h2 class="mb-0">{{ stats.total_valves }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-circle"></i> Operational</h5>
+                <h2 class="mb-0">{{ stats.operational }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-wifi"></i> Connected</h5>
+                <h2 class="mb-0">{{ stats.connected }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-percent"></i> Avg Open</h5>
+                <h2 class="mb-0">{{ stats.avg_open_percentage }}%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-grid-3x3-gap"></i> Recent Valves</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Valve</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Open %</th>
+                                <th>Comm</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for valve in valves %}
+                            <tr>
+                                <td><strong>{{ valve.valve_name }}</strong></td>
+                                <td>{{ valve.location }}</td>
+                                <td>
+                                    <span class="badge bg-{% if valve.status == 'operational' %}success{% elif valve.status == 'maintenance' %}warning{% else %}danger{% endif %}">
+                                        {{ valve.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="width: 100px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ valve.open_percentage }}%">
+                                            {{ valve.open_percentage }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if valve.communication_status == 'connected' %}success{% elif valve.communication_status == 'timeout' %}warning{% else %}danger{% endif %}">
+                                        {{ valve.communication_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('valves.valve_detail', valve_id=valve.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{{ url_for('valves.list_valves') }}" class="btn btn-primary">View All Valves</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for log in recent_logs %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ log.valve_name }}</strong>
+                            <span class="badge bg-{% if log.status == 'success' %}success{% elif log.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </div>
+                        <small class="text-muted">{{ log.command }} by {{ log.username }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('logs.command_logs') }}" class="btn btn-sm btn-secondary mt-3">View All Logs</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-clock"></i> Pending Schedules</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_schedules %}
+                <ul class="list-group list-group-flush">
+                    {% for schedule in pending_schedules %}
+                    <li class="list-group-item">
+                        <strong>{{ schedule.valve_name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ schedule.command }} at {{ schedule.scheduled_time }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No pending schedules</p>
+                {% endif %}
+                <a href="{{ url_for('valves.list_schedules') }}" class="btn btn-sm btn-secondary mt-3">Manage Schedules</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

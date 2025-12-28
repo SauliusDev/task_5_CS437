@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}File Upload - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-cloud-upload"></i> File Upload</h2>
+        <p class="text-muted">Upload firmware updates and configuration files for valves</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Secure Upload</h5>
+            </div>
+            <div class="card-body">
+                <p>This upload endpoint has proper security controls:</p>
+                <ul>
+                    <li>File type whitelist (.bin, .conf only)</li>
+                    <li>Magic byte verification</li>
+                    <li>Size limit enforcement</li>
+                    <li>Secure filename generation</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_secure') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_secure" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_secure" name="file" required>
+                        <small class="text-muted">Allowed: .bin (firmware), .conf (config) - Max 5MB</small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-upload"></i> Upload Securely
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-lock"></i> Encrypted Upload</h5>
+            </div>
+            <div class="card-body">
+                <p>Upload encrypted files (AES-256):</p>
+                <ul>
+                    <li>Files are encrypted before upload</li>
+                    <li>Scanned in encrypted form</li>
+                    <li>Stored securely</li>
+                </ul>
+                <form method="POST" action="{{ url_for('upload.upload_encrypted') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file_encrypted" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file_encrypted" name="file" required>
+                        <small class="text-muted">File will be encrypted with AES-256</small>
+                    </div>
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-upload"></i> Upload Encrypted
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

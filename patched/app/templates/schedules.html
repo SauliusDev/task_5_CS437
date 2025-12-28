@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Schedules - Valve Control System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="bi bi-clock"></i> Scheduled Operations</h2>
+    </div>
+    {% if session.role in ['admin', 'operator'] %}
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
+            <i class="bi bi-plus-circle"></i> Create Schedule
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">All Schedules</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Valve</th>
+                        <th>Scheduled Time</th>
+                        <th>Command</th>
+                        <th>Target %</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td><strong>{{ schedule.valve_name }}</strong></td>
+                        <td>{{ schedule.scheduled_time }}</td>
+                        <td><span class="badge bg-secondary">{{ schedule.command }}</span></td>
+                        <td>{{ schedule.target_percentage or 'N/A' }}</td>
+                        <td>{{ schedule.username }}</td>
+                        <td>
+                            <span class="badge bg-{% if schedule.status == 'pending' %}warning{% elif schedule.status == 'executed' %}success{% elif schedule.status == 'cancelled' %}secondary{% else %}danger{% endif %}">
+                                {{ schedule.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if schedule.status == 'pending' and session.role in ['admin', 'operator'] %}
+                            <form method="POST" action="{{ url_for('valves.cancel_schedule', schedule_id=schedule.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if schedules|length == 0 %}
+        <div class="alert alert-info">No schedules found.</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="createScheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('valves.create_schedule') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="valve_id" class="form-label">Valve</label>
+                        <select class="form-select" id="valve_id" name="valve_id" required>
+                            <option value="">Select a valve...</option>
+                            {% for valve in valves %}
+                            <option value="{{ valve.id }}">{{ valve.valve_name }} - {{ valve.location }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scheduled_time" class="form-label">Scheduled Time</label>
+                        <input type="datetime-local" class="form-control" id="scheduled_time" name="scheduled_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="command" class="form-label">Command</label>
+                        <select class="form-select" id="command" name="command" required>
+                            <option value="OPEN">Open Valve</option>
+                            <option value="CLOSE">Close Valve</option>
+                            <option value="ADJUST">Adjust to Percentage</option>
+                            <option value="SYNC">Synchronize</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="target_percentage_div" style="display: none;">
+                        <label for="target_percentage" class="form-label">Target Percentage</label>
+                        <input type="number" class="form-control" id="target_percentage" name="target_percentage" min="0" max="100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('command').addEventListener('change', function() {
+    const targetDiv = document.getElementById('target_percentage_div');
+    if (this.value === 'ADJUST') {
+        targetDiv.style.display = 'block';
+        document.getElementById('target_percentage').required = true;
+    } else {
+        targetDiv.style.display = 'none';
+        document.getElementById('target_percentage').required = false;
+    }
+});
+</script>
+{% endblock %}
+
