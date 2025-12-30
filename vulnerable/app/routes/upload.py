@@ -68,6 +68,13 @@ def upload_scenario1():
         
         original_filename = file.filename
         
+        check_and_log_file_upload(
+            filename=original_filename,
+            content_type=file.content_type or 'unknown',
+            file_size=request.content_length or 0,
+            endpoint='/upload/scenario1'
+        )
+        
         upload_path = os.path.join(UPLOAD_FOLDER, 'firmware', original_filename)
         file.save(upload_path)
         
@@ -104,6 +111,13 @@ def upload_scenario2():
         
         original_filename = file.filename
         file_ext = get_file_extension(original_filename)
+        
+        check_and_log_file_upload(
+            filename=original_filename,
+            content_type=file.content_type or 'unknown',
+            file_size=request.content_length or 0,
+            endpoint='/upload/scenario2'
+        )
         
         content_length = request.headers.get('Content-Length', type=int)
         if content_length and content_length > MAX_FILE_SIZE:
@@ -152,6 +166,13 @@ def upload_scenario3():
         
         original_filename = secure_filename(file.filename)
         file_content = file.read()
+        
+        check_and_log_file_upload(
+            filename=original_filename,
+            content_type=file.content_type or 'unknown',
+            file_size=len(file_content),
+            endpoint='/upload/scenario3'
+        )
         
         cipher = AES.new(AES_KEY, AES.MODE_CBC)
         encrypted_content = cipher.encrypt(pad(file_content, AES.block_size))

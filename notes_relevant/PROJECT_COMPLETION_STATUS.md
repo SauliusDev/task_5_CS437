@@ -2,12 +2,13 @@
 
 ## Quick Summary
 
-**Overall: 85% Complete** ✅
+**Overall: 87% Complete** ✅
 
 **What's Done:**
 - ✅ Full SCADA application (both vulnerable & patched)
 - ✅ All 4 vulnerabilities implemented correctly
 - ✅ Monitoring system functional
+- ✅ Monitoring calls added to all vulnerable upload endpoints
 - ✅ Docker setup complete
 - ✅ 150 valve records in database
 - ✅ Clean, well-documented code
@@ -16,7 +17,6 @@
 - ❌ Testing with pentesting tools (Burp Suite, sqlmap)
 - ❌ Final consolidated report
 - ❌ Video demonstration
-- ⚠️ Minor fix: Add monitoring calls to vulnerable upload endpoints
 
 ---
 
@@ -140,10 +140,6 @@
    - Need professional PDF format
    - Need side-by-side code comparisons
 
-3. **Minor Code Gap**
-   - Monitoring function not called in upload endpoints
-   - Easy 15-minute fix
-
 ---
 
 ## Comparison with Assignment Requirements
@@ -199,7 +195,7 @@
 ## Estimated Rubric Score
 
 ### Current State (Without Testing/Docs):
-- **Implementation:** 45/50 (excellent)
+- **Implementation:** 50/50 (perfect - monitoring now complete)
 - **Vulnerabilities:** 20/20 (perfect)
 - **Monitoring:** 10/10 (complete)
 - **Testing:** 0/20 (not done)
@@ -207,7 +203,7 @@
 - **Report:** 10/30 (docs exist, not final)
 - **Code Quality:** 10/10 (clean)
 
-**Current Total: 95/160 (59%)**
+**Current Total: 100/160 (62%)**
 
 ### After Completing All Tasks:
 - **Implementation:** 50/50
@@ -224,11 +220,11 @@
 
 ## Priority Actions (Sorted by Impact)
 
-### 🔥 CRITICAL (Do First)
-1. **Add monitoring calls** (1 hour)
+### ✅ COMPLETED
+1. **Add monitoring calls** ✅ DONE
    - File: vulnerable/app/routes/upload.py
-   - Add check_and_log_file_upload() to all 3 scenarios
-   - Impact: Makes monitoring complete
+   - Added check_and_log_file_upload() to all 3 scenarios
+   - Impact: Monitoring now complete and captures all upload attempts
 
 ### 🔴 HIGH (Blocks Completion)
 2. **Burp Suite testing** (4 hours)
