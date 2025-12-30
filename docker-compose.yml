@@ -1,8 +1,8 @@
-version: '3.8'
-
 services:
   vulnerable:
-    build: ./vulnerable
+    build: 
+      context: ./vulnerable
+      dockerfile: Dockerfile
     container_name: scada_vulnerable
     ports:
       - "5002:5002"
@@ -12,12 +12,16 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
     networks:
       - scada_network
     restart: unless-stopped
+    platform: linux/amd64
 
   patched:
-    build: ./patched
+    build:
+      context: ./patched
+      dockerfile: Dockerfile
     container_name: scada_patched
     ports:
       - "5001:5001"
@@ -27,9 +31,11 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
     networks:
       - scada_network
     restart: unless-stopped
+    platform: linux/amd64
 
 volumes:
   vulnerable_data:

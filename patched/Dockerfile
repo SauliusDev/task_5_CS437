@@ -19,5 +19,5 @@ EXPOSE 5001
 ENV FLASK_APP=app/app.py
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "app/app.py"]
+CMD ["python", "run.py"]
 

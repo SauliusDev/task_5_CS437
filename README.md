@@ -113,8 +113,11 @@ Implements proper security controls:
 ### Prerequisites
 - Docker (version 20.10+)
 - Docker Compose (version 2.0+)
+- For Windows: Docker Desktop with WSL2 enabled
 
 ### Installation & Setup
+
+#### Linux / macOS:
 
 1. Clone the repository:
 ```bash
@@ -127,9 +130,26 @@ cd task_5_CS437
 docker-compose up --build
 ```
 
-3. Access the applications:
-   - **Vulnerable Version:** http://localhost:5000
-   - **Patched Version:** http://localhost:5001
+#### Windows 11:
+
+1. Clone the repository (ensure correct line endings):
+```bash
+git config --global core.autocrlf false
+git clone <repository-url>
+cd task_5_CS437
+```
+
+2. Double-click `build-windows.bat` or run in PowerShell:
+```powershell
+.\build-windows.bat
+```
+
+**For troubleshooting Windows issues, see `WINDOWS_SETUP.txt`**
+
+### Access the Applications
+
+- **Vulnerable Version:** http://localhost:5002
+- **Patched Version:** http://localhost:5001
 
 ### Default Credentials
 
