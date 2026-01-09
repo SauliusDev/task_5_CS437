@@ -166,3 +166,72 @@ def upload_encrypted():
     
     return render_template('upload.html', scenario='encrypted')
 
+@upload_bp.route('/upload/encrypted/decrypt/<int:file_id>', methods=['POST'])
+@admin_required
+def decrypt_file(file_id):
+    from app.models import get_db_connection
+    
+    conn = get_db_connection()
+    upload = conn.execute('SELECT * FROM file_uploads WHERE id = ?', (file_id,)).fetchone()
+    conn.close()
+    
+    if not upload or not upload['is_encrypted']:
+        flash('File not found or not encrypted', 'danger')
+        return redirect(url_for('upload.upload_index'))
+    
+    encrypted_path = os.path.join(UPLOAD_FOLDER, 'encrypted', upload['stored_filename'])
+    
+    if not os.path.exists(encrypted_path):
+        flash('Encrypted file not found on disk', 'danger')
+        return redirect(url_for('upload.upload_index'))
+    
+    with open(encrypted_path, 'rb') as f:
+        iv = f.read(16)
+        encrypted_content = f.read()
+    
+    cipher = AES.new(AES_KEY, AES.MODE_CBC, iv)
+    decrypted_content = unpad(cipher.decrypt(encrypted_content), AES.block_size)
+    
+    # SECURITY FIX: Scan AFTER decryption (decrypt-then-scan pipeline)
+    # This prevents malicious content hidden through encryption
+    
+    # Check for malicious patterns in decrypted content
+    malicious_patterns = [b'<?php', b'<script', b'<iframe', b'eval(', b'exec(']
+    for pattern in malicious_patterns:
+        if pattern in decrypted_content:
+            flash('Malicious content detected after decryption - file blocked', 'danger')
+            return redirect(url_for('upload.upload_index'))
+    
+    # Verify file type using magic bytes on decrypted content
+    if MAGIC_AVAILABLE:
+        try:
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_buffer(decrypted_content)
+            
+            allowed_mime_types = [
+                'application/octet-stream',
+                'text/plain',
+                'application/x-executable'
+            ]
+            
+            if mime_type not in allowed_mime_types:
+                flash(f'Invalid file type after decryption: {mime_type} - file blocked', 'danger')
+                return redirect(url_for('upload.upload_index'))
+        except Exception as e:
+            flash('File type verification failed after decryption', 'danger')
+            return redirect(url_for('upload.upload_index'))
+    
+    # Additional size check after decryption
+    if len(decrypted_content) > MAX_FILE_SIZE:
+        flash('Decrypted file exceeds size limit', 'danger')
+        return redirect(url_for('upload.upload_index'))
+    
+    # Only save if all security checks pass
+    decrypted_filename = f"{secrets.token_hex(16)}_{upload['original_filename']}"
+    decrypted_path = os.path.join(UPLOAD_FOLDER, 'firmware', decrypted_filename)
+    
+    with open(decrypted_path, 'wb') as f:
+        f.write(decrypted_content)
+    
+    flash(f'File decrypted successfully after security verification: {upload["original_filename"]}', 'success')
+    return redirect(url_for('upload.upload_index'))
