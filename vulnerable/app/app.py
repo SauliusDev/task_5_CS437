@@ -4,7 +4,6 @@ import os
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
 from app.routes.auth import auth_bp
 from app.routes.dashboard import dashboard_bp
