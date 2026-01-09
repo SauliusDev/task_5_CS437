@@ -188,7 +188,12 @@ def upload_scenario3():
                 temp_content = f.read(100)
                 mime = magic.Magic(mime=True)
                 detected_type = mime.from_buffer(temp_content)
-        
+            # reject if not allowed
+            if not validate_file_content(upload_path):
+                os.remove(upload_path)
+                flash(f'File content validation failed: {detected_type}', 'danger')
+                return redirect(request.url)
+                
         FileUpload.create(
             original_filename=original_filename,
             stored_filename=stored_filename,
