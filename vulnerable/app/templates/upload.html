@@ -110,16 +110,19 @@
                 <p class="text-warning"><strong>Vulnerability: CWE-434</strong></p>
                 <p>Weak security controls (bypassable):</p>
                 <ul>
-                    <li>Header-based size check (bypassable)</li>
+                    <li>Trusts X-File-Size header (easily spoofed)</li>
                     <li>Extension blacklist (incomplete)</li>
                     <li>No MIME type verification</li>
                     <li>No content scanning</li>
                 </ul>
+                <div class="alert alert-info">
+                    <small><strong>Bypass Tip:</strong> Use Burp Suite or curl to add header: <code>X-File-Size: 1048576</code> to bypass the 5MB limit</small>
+                </div>
                 <form method="POST" action="{{ url_for('upload.upload_scenario2') }}" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="file_scenario2" class="form-label">Select File</label>
                         <input type="file" class="form-control" id="file_scenario2" name="file" required>
-                        <small class="text-warning">⚠️ Blacklist: .exe, .sh, .bat, .php</small>
+                        <small class="text-warning">⚠️ Blacklist: .exe, .sh, .bat, .php | Max: 5MB</small>
                     </div>
                     <button type="submit" class="btn btn-warning">
                         <i class="bi bi-upload"></i> Upload (Weak)

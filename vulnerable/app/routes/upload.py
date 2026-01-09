@@ -113,15 +113,18 @@ def upload_scenario2():
         original_filename = file.filename
         file_ext = get_file_extension(original_filename)
         
+        claimed_file_size = request.headers.get('X-File-Size', type=int)
+        if not claimed_file_size:
+            claimed_file_size = request.content_length or 0
+        
         check_and_log_file_upload(
             filename=original_filename,
             content_type=file.content_type or 'unknown',
-            file_size=request.content_length or 0,
+            file_size=claimed_file_size,
             endpoint='/upload/scenario2'
         )
         
-        content_length = request.headers.get('Content-Length', type=int)
-        if content_length and content_length > MAX_FILE_SIZE:
+        if claimed_file_size > MAX_FILE_SIZE:
             flash(f'File too large. Maximum size: {MAX_FILE_SIZE / 1024 / 1024}MB', 'danger')
             return redirect(request.url)
         
