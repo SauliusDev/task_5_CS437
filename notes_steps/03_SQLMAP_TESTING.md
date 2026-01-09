@@ -23,7 +23,7 @@ Session cookies expire, so get fresh ones before testing.
 
 **Firefox:**
 1. Go to http://localhost:5002
-2. Login as operator1/operator123
+2. Login as operator/operator123
 3. Press F12 → Storage → Cookies
 4. Copy session value
 
