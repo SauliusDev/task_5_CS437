@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app.models import AutoResponseRule, BlockedIP, SecurityAction, FailedLoginTracker, UserLocked, AttackLog
-
+LOG_ONLY_ACTIONS = {'block_ip', 'rate_limit'}
 def check_and_execute_auto_response(attack_id, attack_type, ip_address, user_id, risk_score):
     rules = AutoResponseRule.get_by_attack_type(attack_type)
     
@@ -42,6 +42,22 @@ def should_trigger_rule(rule, attack_type, ip_address, user_id, risk_score):
     return False
 
 def execute_action(action_type, rule, attack_id, ip_address, user_id, attack_type_name):
+   
+    if action_type in LOG_ONLY_ACTIONS:
+        reason = f"LOG-ONLY: {attack_type_name} - Rule: {rule['rule_name']} - Target IP: {ip_address}"
+        
+        SecurityAction.create(
+            action_type=action_type,                 
+            target=f"ip:{ip_address}",
+            reason=reason,
+            attack_log_id=attack_id,
+            automated=True
+        )
+        
+        AttackLog.mark_action_taken(attack_id, f'{action_type}_logged_only')
+        return
+
+
     if action_type == 'block_ip':
         execute_block_ip(ip_address, rule, attack_id, attack_type_name)
     
@@ -54,6 +70,7 @@ def execute_action(action_type, rule, attack_id, ip_address, user_id, attack_typ
     
     elif action_type == 'rate_limit':
         execute_rate_limit(ip_address, rule, attack_id, attack_type_name)
+
 
 def execute_block_ip(ip_address, rule, attack_id, attack_type_name):
     existing_block = BlockedIP.is_blocked(ip_address)
