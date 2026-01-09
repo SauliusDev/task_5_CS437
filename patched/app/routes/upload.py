@@ -50,7 +50,8 @@ def validate_file_content(filepath):
 @upload_bp.route('/upload')
 @admin_required
 def upload_index():
-    return render_template('upload.html')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/secure', methods=['GET', 'POST'])
 @admin_required
@@ -109,7 +110,8 @@ def upload_secure():
         flash(f'File uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='secure')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='secure', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/encrypted', methods=['GET', 'POST'])
 @admin_required
@@ -164,7 +166,8 @@ def upload_encrypted():
         flash(f'Encrypted file uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='encrypted')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='encrypted', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/encrypted/decrypt/<int:file_id>', methods=['POST'])
 @admin_required

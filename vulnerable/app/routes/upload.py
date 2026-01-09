@@ -50,8 +50,8 @@ def validate_file_content(filepath):
 @upload_bp.route('/upload')
 @admin_required
 def upload_index():
-    uploads = FileUpload.get_all()
-    return render_template('upload.html', uploads=uploads)
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/scenario1', methods=['GET', 'POST'])
 @admin_required
@@ -94,7 +94,8 @@ def upload_scenario1():
         flash(f'File uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='scenario1')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='scenario1', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/scenario2', methods=['GET', 'POST'])
 @admin_required
@@ -149,7 +150,8 @@ def upload_scenario2():
         flash(f'File uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='scenario2')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='scenario2', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/scenario3', methods=['GET', 'POST'])
 @admin_required
@@ -207,7 +209,8 @@ def upload_scenario3():
         flash(f'Encrypted file uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='scenario3')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='scenario3', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/scenario3/decrypt/<int:file_id>', methods=['POST'])
 @admin_required
@@ -301,7 +304,8 @@ def upload_secure():
         flash(f'File uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='secure')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='secure', uploaded_files=uploaded_files)
 
 @upload_bp.route('/upload/encrypted', methods=['GET', 'POST'])
 @admin_required
@@ -356,5 +360,6 @@ def upload_encrypted():
         flash(f'Encrypted file uploaded successfully: {original_filename}', 'success')
         return redirect(url_for('upload.upload_index'))
     
-    return render_template('upload.html', scenario='encrypted')
+    uploaded_files = FileUpload.get_all()
+    return render_template('upload.html', scenario='encrypted', uploaded_files=uploaded_files)
 

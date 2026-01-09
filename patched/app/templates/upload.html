@@ -64,5 +64,79 @@
         </div>
     </div>
 </div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-files"></i> Uploaded Files</h5>
+            </div>
+            <div class="card-body">
+                {% if uploaded_files %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Original Filename</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Encrypted</th>
+                                <th>Upload Endpoint</th>
+                                <th>Uploaded By</th>
+                                <th>Upload Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in uploaded_files %}
+                            <tr>
+                                <td>{{ file.id }}</td>
+                                <td>{{ file.original_filename }}</td>
+                                <td>
+                                    {% if file.file_type == 'firmware' %}
+                                        <span class="badge bg-primary">Firmware</span>
+                                    {% elif file.file_type == 'config' %}
+                                        <span class="badge bg-info">Config</span>
+                                    {% elif file.file_type == 'encrypted' %}
+                                        <span class="badge bg-warning">Encrypted</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ file.file_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ "%.2f"|format(file.file_size / 1024) }} KB</td>
+                                <td>
+                                    {% if file.is_encrypted %}
+                                        <i class="bi bi-lock-fill text-warning"></i> Yes
+                                    {% else %}
+                                        <i class="bi bi-unlock text-muted"></i> No
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ file.upload_endpoint }}</code></td>
+                                <td>{{ file.username }}</td>
+                                <td>{{ file.upload_timestamp }}</td>
+                                <td>
+                                    {% if file.is_encrypted %}
+                                        <form method="POST" action="{{ url_for('upload.decrypt_file', file_id=file.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Decrypt File">
+                                                <i class="bi bi-unlock"></i> Decrypt
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No files uploaded yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 

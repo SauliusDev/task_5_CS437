@@ -182,8 +182,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% if uploads %}
-                                {% for upload in uploads %}
+                            {% if uploaded_files %}
+                                {% for upload in uploaded_files %}
                                 <tr>
                                     <td>{{ upload.id }}</td>
                                     <td>{{ upload.original_filename }}</td>
@@ -195,7 +195,7 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ (upload.file_size / 1024) | round(2) }} KB</td>
-                                    <td>{{ upload.uploaded_at }}</td>
+                                    <td>{{ upload.upload_timestamp }}</td>
                                     <td><code>{{ upload.upload_endpoint }}</code></td>
                                     <td>
                                         {% if upload.is_encrypted and upload.upload_endpoint == '/upload/scenario3' %}
