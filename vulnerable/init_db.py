@@ -106,6 +106,14 @@ def init_database():
             severity TEXT CHECK(severity IN ('low', 'medium', 'high', 'critical')),
             details TEXT,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            risk_score INTEGER DEFAULT 50,
+            recommended_action TEXT,
+            action_taken TEXT,
+            blocked BOOLEAN DEFAULT 0,
+            classification TEXT,
+            reverse_action_steps TEXT,
+            raw_request_data TEXT,
+            response_status INTEGER,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     ''')

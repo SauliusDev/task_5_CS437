@@ -69,6 +69,13 @@ def upload_secure():
         original_filename = secure_filename(file.filename)
         file_ext = get_file_extension(original_filename)
         
+        check_and_log_file_upload(
+            filename=file.filename,
+            content_type=file.content_type or 'unknown',
+            file_size=request.content_length or 0,
+            endpoint='/upload/secure'
+        )
+        
         if file_ext not in ALLOWED_EXTENSIONS:
             flash(f'Invalid file type. Allowed: {", ".join(ALLOWED_EXTENSIONS)}', 'danger')
             return redirect(request.url)
@@ -128,6 +135,13 @@ def upload_encrypted():
         
         original_filename = secure_filename(file.filename)
         file_content = file.read()
+        
+        check_and_log_file_upload(
+            filename=file.filename,
+            content_type=file.content_type or 'unknown',
+            file_size=len(file_content),
+            endpoint='/upload/encrypted'
+        )
         
         file_ext = get_file_extension(original_filename)
         if file_ext not in ALLOWED_EXTENSIONS:
