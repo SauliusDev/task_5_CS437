@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+import atexit
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -19,3 +20,6 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(monitoring_bp)
 app.register_blueprint(logs_bp)
 
+from app.utils.scheduler import start_scheduler, stop_scheduler
+start_scheduler()
+atexit.register(stop_scheduler)

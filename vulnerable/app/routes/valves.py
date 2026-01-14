@@ -37,8 +37,6 @@ def search_valves():
         user = User.get_by_id(session.get('user_id'))
         
         if user and user['role'] == 'admin':
-            check_and_log_sql_injection(search_term, '/valves/search')
-            
             try:
                 conn = get_db_connection()
                 query = f"SELECT * FROM valves WHERE valve_name LIKE '%{search_term}%' OR location LIKE '%{search_term}%' ORDER BY valve_name"

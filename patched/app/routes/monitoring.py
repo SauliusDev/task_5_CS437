@@ -26,12 +26,14 @@ def index():
                          recent_actions=recent_actions,
                          auto_rules=auto_rules)
 
+# not used
 @monitoring_bp.route('/api/monitoring/stats')
 @admin_required
 def get_stats():
     stats = AttackLog.get_statistics()
     return jsonify(stats)
 
+# not used
 @monitoring_bp.route('/api/monitoring/attacks')
 @admin_required
 def get_attacks():
@@ -48,6 +50,7 @@ def get_attacks():
     
     return jsonify(attacks)
 
+# not used
 @monitoring_bp.route('/api/monitoring/actionable')
 @admin_required
 def get_actionable():

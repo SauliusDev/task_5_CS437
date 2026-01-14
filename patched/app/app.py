@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+import atexit
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -32,3 +33,6 @@ def before_request_security():
 def handle_404(error):
     return log_404_handler(error)
 
+from app.utils.scheduler import start_scheduler, stop_scheduler
+start_scheduler()
+atexit.register(stop_scheduler)
